@@ -13,6 +13,8 @@ import (
 func main() {
 	result1 := findTopCrates(filepath.Join("./day5", "input.txt"))
 	fmt.Printf("Result1 : %v\n", result1)
+	result2 := findTopCrates2(filepath.Join("./day5", "input.txt"))
+	fmt.Printf("Result2 : %v\n", result2)
 }
 
 func findTopCrates(path string) (result string) {
@@ -26,10 +28,24 @@ func findTopCrates(path string) (result string) {
 	crates := parseCrates(scanner)
 	fmt.Println(crates)
 	moves := parseMoves(scanner)
-	result = moveCrates(crates, moves)
+	result = moveCrates(crates, moves, true)
 	return result
 }
 
+func findTopCrates2(path string) (result string) {
+	file, err := os.Open(path)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer file.Close()
+
+	scanner := bufio.NewScanner(file)
+	crates := parseCrates(scanner)
+	fmt.Println(crates)
+	moves := parseMoves(scanner)
+	result = moveCrates(crates, moves, false)
+	return result
+}
 func parseCrates(scanner *bufio.Scanner) (crates []string) {
 	var lines []string
 	for scanner.Scan() {
@@ -72,7 +88,7 @@ func parseMoves(scanner *bufio.Scanner) (moves [][]int) {
 	return moves
 }
 
-func moveCrates(crates []string, moves [][]int) (top string) {
+func moveCrates(crates []string, moves [][]int, oneByOne bool) (top string) {
 	for _, move := range moves {
 		from := move[0]
 		to := move[1]
@@ -80,8 +96,12 @@ func moveCrates(crates []string, moves [][]int) (top string) {
 
 		splitPos := len(crates[from]) - cnt
 		toMove := crates[from][splitPos:]
-		for i := len(toMove) - 1; i >= 0; i-- {
-			crates[to] += string(toMove[i])
+		if oneByOne {
+			for i := len(toMove) - 1; i >= 0; i-- {
+				crates[to] += string(toMove[i])
+			}
+		} else {
+			crates[to] += toMove
 		}
 		crates[from] = crates[from][0:splitPos]
 	}
